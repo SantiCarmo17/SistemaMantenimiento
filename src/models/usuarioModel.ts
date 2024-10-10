@@ -32,6 +32,12 @@ export class Usuario extends BaseEntity{
     @Length(6, 100, { message: "La contraseña debe tener al menos 6 caracteres" })
     contrasenia: string;
 
+    @Column()
+    tokenRestablecerContrasenia: string;
+
+    @Column('date')
+    tokenRestablecerExpiracion: Date;
+
     @CreateDateColumn()
     createdAt: Date;
 

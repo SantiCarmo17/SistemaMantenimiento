@@ -55,10 +55,10 @@ class AuthController{
 
     //Login de Usuario
     async loginUsuario(req: Request, res: Response){
-        const { correo, contrasenia } = req.body;
+      const { correo, contrasenia } = req.body;
 
-        try {
-            const usuario = await Usuario.findOne({where: { correo }});
+      try {
+            const usuario = await Usuario.findOne({where: { correo }, relations: {roles: true}});
 
             if(!usuario){
                 return res.status(401).json({ error:'Usuario o Contraseña incorrectos' });
@@ -74,6 +74,7 @@ class AuthController{
 
             res.send({
                 correo: usuario.correo,
+                rol: usuario.roles[0].nombre,
                 token
             });
 

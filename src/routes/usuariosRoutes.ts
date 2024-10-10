@@ -10,6 +10,10 @@ router.get('/', verificarToken, validarRol(['ADMINISTRADOR', 'USUARIO DE CONSULT
 
 router.put('/:documento/estado', verificarToken, validarRol(['ADMINISTRADOR', 'USUARIO DE CONSULTA']), usuariosController.actualizarEstadoUsuario);
 
+router.post('/recuperar-contrasenia', usuariosController.enviarCorreoRecuperación);
+
+router.post('/recuperar-contrasenia/:token', usuariosController.restablecerContrasenia);
+
 router.route("/:documento")
     .get(verificarToken, validarRol(['ADMINISTRADOR', 'USUARIO DE CONSULTA']), usuariosController.obtenerRolUsuario)
     .put(verificarToken, validarRol(['ADMINISTRADOR']), usuariosController.modificarDatosUsuario);

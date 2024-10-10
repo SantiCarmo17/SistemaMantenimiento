@@ -1,7 +1,6 @@
-import { BaseEntity, Column, Entity, JoinColumn, ManyToMany, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { BaseEntity, Column, CreateDateColumn, Entity, JoinColumn, ManyToMany, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { Usuario } from "./usuarioModel";
 import { Equipo } from "./equipoModel";
-import { ChequeoMantenimiento } from "./ChequeoMantenimiento";
 import { IsNotEmpty, Length } from "class-validator";
 import { IsBefore } from "../validators/IsBeforeConstraint";
 import { Chequeo } from "./chequeoModel";
@@ -22,7 +21,7 @@ export class Mantenimiento extends BaseEntity{
     fechaProxMantenimiento: Date;
 
     @Column('date', {name: 'fecha_ultimo_mantenimiento'})
-    @IsBefore('fechaProxMantenimiento', { message: "La fecha debe ser anterior a la fecha del próximo mantenimientoa" })
+    @IsBefore('fechaProxMantenimiento', { message: "La fecha debe ser anterior a la fecha del próximo mantenimiento" })
     fechaUltimoMantenimiento: Date;
 
     @ManyToOne(() => Usuario, (usuario) => usuario.mantenimientos)
@@ -35,6 +34,10 @@ export class Mantenimiento extends BaseEntity{
     @OneToMany(() => Chequeo, chequeo => chequeo.mantenimiento)
     chequeos: Chequeo[];
 
-    @OneToMany(() => ChequeoMantenimiento, (chequeoMantenimiento) => chequeoMantenimiento.mantenimiento)
-    chequeosMantenimiento: ChequeoMantenimiento[];
+
+    @CreateDateColumn()
+    createdAt: Date;
+
+    @UpdateDateColumn()
+    updatedAt: Date;
 }

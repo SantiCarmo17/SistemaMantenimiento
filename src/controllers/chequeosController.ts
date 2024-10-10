@@ -20,11 +20,11 @@ export class ChequeosController{
             });
     
             if (chequeo) {
-                // Si existe, actualizar la descripción y observaciones
+                //Si existe chequeo, actualizamos la descripción y observaciones
                 chequeo.descripcion = descripcion;
                 chequeo.observaciones = observaciones;
             } else {
-                // Si no existe, crear uno nuevo
+                //Si no existe, cremos uno nuevo
                 const equipo = await Equipo.findOne({ where: { serial: equipoSerial } });
                 const mantenimiento = await Mantenimiento.findOne({ where: { idMantenimiento: mantenimientoId } });
     
@@ -39,7 +39,7 @@ export class ChequeosController{
                 chequeo.mantenimiento = mantenimiento;
             }
     
-            // Guardar el chequeo en la base de datos
+            //Guardamos el chequeo en la base de datos
             await chequeo.save();
     
             res.status(200).json({ message: 'Chequeo guardado correctamente', chequeo });

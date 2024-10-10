@@ -7,18 +7,22 @@ import { Usuario } from "../models/usuarioModel";
 import { Rol } from "../models/rolModel";
 import { Estado } from "../models/estadoModel";
 import { Chequeo } from "../models/chequeoModel";
-import { Area } from "../models/areaModel";
-import { ChequeoMantenimiento } from "../models/ChequeoMantenimiento";
+import { Sede } from "../models/sedeModel";
+import { Subsede } from "../models/subsedeModel";
+import { Dependencia } from "../models/dependenciaModel";
+import { Ambiente } from "../models/ambienteModel";
+import { config } from "dotenv";
+config();
 
 export const AppDataSource = new DataSource({
     type: "mysql",
-    host: "localhost",
-    port: 3306,
-    username: "root",
-    password: "",
-    database: "sismantenimiento",
+    host: process.env.DB_HOST,
+    port: Number(process.env.DB_PORT),
+    username: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_DATABASE,
     logging: true,
-    entities: [Equipo, TipoEquipo, CuentaDante, Mantenimiento, Usuario, Rol, Estado, Chequeo, Area, ChequeoMantenimiento],
+    entities: [Equipo, TipoEquipo, CuentaDante, Mantenimiento, Usuario, Rol, Estado, Chequeo, Sede, Subsede, Dependencia, Ambiente],
     synchronize: false
 })
 
