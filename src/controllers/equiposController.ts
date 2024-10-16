@@ -136,29 +136,29 @@ class EquiposController{
                 return res.status(400).json({ message: 'No se subió ningún archivo' });
             }
     
-            // Leer el archivo como un buffer
+            //Leemos el archivo como un buffer
             const workbook = XLSX.read(file, { type: 'buffer' });
             const sheetName = workbook.SheetNames[0];
             const worksheet = workbook.Sheets[sheetName];
     
-            // Convertir los datos del worksheet a un array de objetos
+            //Convertimos los datos del worksheet a un array de objetos
             const data: EquipoRow[] = XLSX.utils.sheet_to_json(worksheet);
     
             const equipos: Equipo[] = data.map(item => {
                 let fechaCompra: Date;
                 
-                // Verificar si la fechaCompra es un número (serial de Excel)
+                //Verificaciones de fecha
                 if (typeof item.fechaCompra === 'number') {
-                    const excelDate = item.fechaCompra; // Número serial
-                    const parsedDate = XLSX.SSF.parse_date_code(excelDate); // Convierte el serial a una fecha
-                    fechaCompra = new Date(parsedDate.y, parsedDate.m - 1, parsedDate.d); // Construir la fecha en formato JS
+                    const excelDate = item.fechaCompra; 
+                    const parsedDate = XLSX.SSF.parse_date_code(excelDate);
+                    fechaCompra = new Date(parsedDate.y, parsedDate.m - 1, parsedDate.d); 
                 } else if (typeof item.fechaCompra === 'string') {
-                    // Intentar parsear la fecha si viene como cadena
                     fechaCompra = new Date(item.fechaCompra);
                 } else {
-                    fechaCompra = new Date(item.fechaCompra); // Si es Date, lo manejamos como tal
+                    fechaCompra = new Date(item.fechaCompra); 
                 }
     
+                //Nueva instancia
                 return new Equipo({
                     serial: item.serial,
                     marca: item.marca,
@@ -174,7 +174,7 @@ class EquiposController{
                 });
             });
     
-            // Guardar los datos en la base de datos
+            //Guardamos los datos en la base de datos
             await Equipo.save(equipos);
     
             res.json({ message: 'Datos importados correctamente' });
@@ -186,19 +186,40 @@ class EquiposController{
 
     async generarDatosCv(req: Request, res: Response) {
         try {
-            const equipoRepository = AppDataSource.getRepository(Equipo);
-            const datos = await equipoRepository
-                .createQueryBuilder('equipo')
-                .select(['equipo.serial', 'equipo.marca', 'equipo.referencia', 'equipo.placa_sena'])
-                .getRawMany();
+            const equipos = await Equipo.find({
+                select: ['serial', 'marca', 'referencia', 'placaSena']
+            })
             
-            res.status(200).json(datos);
+            res.status(200).json(equipos);
         } catch (err) {
             if (err instanceof Error) {
                 res.status(500).send(err.message);
             }
         }
     }
+
+    async generarDatosCvEspecifico(req: Request, res: Response) {
+        const { serial } = req.params; 
+    
+        try {
+            const equipo = await Equipo.findOne({
+                where: { serial: serial },
+                //select: ['serial', 'marca', 'referencia', 'placaSena', 'fechaCompra'],
+                relations: ['cuentaDante', 'mantenimientos']
+            });
+    
+            if (!equipo) {
+                return res.status(404).json({ message: "Equipo no encontrado" });
+            }
+    
+            res.status(200).json(equipo);
+        } catch (err) {
+            if (err instanceof Error) {
+                res.status(500).send(err.message);
+            }
+        }
+    }
+    
 }
 
 export default new EquiposController();

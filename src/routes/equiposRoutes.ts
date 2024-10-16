@@ -16,6 +16,8 @@ router.get('/', verificarToken, validarRol(['ADMINISTRADOR', 'TÉCNICO EN CAMPO'
 
 router.get('/equiposCV', verificarToken, validarRol(['ADMINISTRADOR', 'TÉCNICO EN CAMPO', 'USUARIO DE CONSULTA']), equiposController.generarDatosCv);
 
+router.get('/equiposCV/:serial', verificarToken, validarRol(['ADMINISTRADOR', 'TÉCNICO EN CAMPO', 'USUARIO DE CONSULTA']), equiposController.generarDatosCvEspecifico);
+
 router.route("/:serial")
     .get(verificarToken, validarRol(['ADMINISTRADOR', 'TÉCNICO EN CAMPO', 'USUARIO DE CONSULTA']), equiposController.obtenerEquipoPorSerial)
     .put(verificarToken, validarRol(['ADMINISTRADOR']), equiposController.modificarEquipo);
