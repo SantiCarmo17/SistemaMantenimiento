@@ -232,7 +232,7 @@ class EquiposController {
                 const equipo = yield equipoModel_1.Equipo.findOne({
                     where: { serial: serial },
                     //select: ['serial', 'marca', 'referencia', 'placaSena', 'fechaCompra'],
-                    relations: ['cuentaDante', 'mantenimientos', 'subsede', 'dependencia', 'ambiente', 'tipoEquipo']
+                    relations: ['cuentaDante', 'mantenimientos', 'mantenimientos.usuario', 'subsede', 'dependencia', 'ambiente', 'tipoEquipo']
                 });
                 if (!equipo) {
                     return res.status(404).json({ message: "Equipo no encontrado" });
