@@ -18,7 +18,7 @@ class ChequeosController {
     }
     addOrUpdateChequeo(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            const { equipoSerial, mantenimientoId, descripcion, observaciones } = req.body;
+            const { equipoSerial, mantenimientoId, descripcion, observaciones, linkEvidencia } = req.body;
             try {
                 // Buscar si ya existe un chequeo para el equipo y mantenimiento dado
                 let chequeo = yield chequeoModel_1.Chequeo.findOne({
@@ -29,9 +29,10 @@ class ChequeosController {
                     //Si existe chequeo, actualizamos la descripción y observaciones
                     chequeo.descripcion = descripcion;
                     chequeo.observaciones = observaciones;
+                    chequeo.linkEvidencia = linkEvidencia;
                 }
                 else {
-                    //Si no existe, cremos uno nuevo
+                    //Si no existe, creamos uno nuevo
                     const equipo = yield equipoModel_1.Equipo.findOne({ where: { serial: equipoSerial } });
                     const mantenimiento = yield mantenimientoModel_1.Mantenimiento.findOne({ where: { idMantenimiento: mantenimientoId } });
                     if (!equipo || !mantenimiento) {
@@ -40,6 +41,7 @@ class ChequeosController {
                     chequeo = new chequeoModel_1.Chequeo();
                     chequeo.descripcion = descripcion;
                     chequeo.observaciones = observaciones;
+                    chequeo.linkEvidencia = linkEvidencia;
                     chequeo.equipo = equipo;
                     chequeo.mantenimiento = mantenimiento;
                 }

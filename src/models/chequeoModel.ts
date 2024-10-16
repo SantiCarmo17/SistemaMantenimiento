@@ -1,6 +1,6 @@
 import { BaseEntity, Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { Equipo } from "./equipoModel";
-import { Mantenimiento } from "./mantenimientoModel"; // Asegúrate de importar tu modelo de Mantenimiento
+import { Mantenimiento } from "./mantenimientoModel"; 
 
 @Entity('chequeos')
 export class Chequeo extends BaseEntity {
@@ -12,6 +12,9 @@ export class Chequeo extends BaseEntity {
 
     @Column("varchar", { length: 150 })
     observaciones: string;
+
+    @Column("varchar", {name: 'link_evidencia', length: 250 })
+    linkEvidencia: string;
 
     @ManyToOne(() => Equipo, (equipo) => equipo.chequeos)
     @JoinColumn({ name: 'equipo_serial' })

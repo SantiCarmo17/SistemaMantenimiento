@@ -10,7 +10,7 @@ export class ChequeosController{
     }
 
     async addOrUpdateChequeo(req: Request, res: Response){
-        const { equipoSerial, mantenimientoId, descripcion, observaciones } = req.body;
+        const { equipoSerial, mantenimientoId, descripcion, observaciones, linkEvidencia } = req.body;
     
         try {
             // Buscar si ya existe un chequeo para el equipo y mantenimiento dado
@@ -23,8 +23,9 @@ export class ChequeosController{
                 //Si existe chequeo, actualizamos la descripción y observaciones
                 chequeo.descripcion = descripcion;
                 chequeo.observaciones = observaciones;
+                chequeo.linkEvidencia = linkEvidencia;
             } else {
-                //Si no existe, cremos uno nuevo
+                //Si no existe, creamos uno nuevo
                 const equipo = await Equipo.findOne({ where: { serial: equipoSerial } });
                 const mantenimiento = await Mantenimiento.findOne({ where: { idMantenimiento: mantenimientoId } });
     
@@ -35,6 +36,7 @@ export class ChequeosController{
                 chequeo = new Chequeo();
                 chequeo.descripcion = descripcion;
                 chequeo.observaciones = observaciones;
+                chequeo.linkEvidencia = linkEvidencia;
                 chequeo.equipo = equipo;
                 chequeo.mantenimiento = mantenimiento;
             }

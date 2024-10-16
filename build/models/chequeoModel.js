@@ -12,7 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Chequeo = void 0;
 const typeorm_1 = require("typeorm");
 const equipoModel_1 = require("./equipoModel");
-const mantenimientoModel_1 = require("./mantenimientoModel"); // Asegúrate de importar tu modelo de Mantenimiento
+const mantenimientoModel_1 = require("./mantenimientoModel");
 let Chequeo = class Chequeo extends typeorm_1.BaseEntity {
 };
 exports.Chequeo = Chequeo;
@@ -28,6 +28,10 @@ __decorate([
     (0, typeorm_1.Column)("varchar", { length: 150 }),
     __metadata("design:type", String)
 ], Chequeo.prototype, "observaciones", void 0);
+__decorate([
+    (0, typeorm_1.Column)("varchar", { name: 'link_evidencia', length: 250 }),
+    __metadata("design:type", String)
+], Chequeo.prototype, "linkEvidencia", void 0);
 __decorate([
     (0, typeorm_1.ManyToOne)(() => equipoModel_1.Equipo, (equipo) => equipo.chequeos),
     (0, typeorm_1.JoinColumn)({ name: 'equipo_serial' }),
