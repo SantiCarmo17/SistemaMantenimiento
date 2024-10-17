@@ -53,24 +53,25 @@ class EquiposController {
     agregarEquipo(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const { serial, marca, referencia, fechaCompra, placaSena, cuentaDante, tipoEquipo, estado, chequeos, sede, subsede, dependencia, ambiente, mantenimientos, chequeosMantenimiento } = req.body;
-                //Verificamos que no exista un equipo con el mismo serial
-                const equipoExistente = yield equipoModel_1.Equipo.findOneBy({ serial: serial });
+                const { serial, marca, referencia, fechaCompra, placaSena, cuentaDante, tipoEquipo, estado, chequeos, sede, subsede, dependencia, ambiente, mantenimientos } = req.body;
+                //Verificación de equipo con el mismo serial
+                const equipoExistente = yield equipoModel_1.Equipo.findOneBy({ serial });
                 if (equipoExistente) {
                     return res.status(400).json({ error: 'Este Equipo ya está registrado' });
                 }
-                //Verificamos que el propietario si exista en la BD
+                //Verificación de existencia de cuentadante
                 const cuentaDanteRegistro = yield cuentaDanteModel_1.CuentaDante.findOneBy({ documento: cuentaDante });
                 if (!cuentaDanteRegistro) {
                     throw new Error('Cuentadante no encontrado');
                 }
+                //Nueva instancia de equipo
                 const equipo = new equipoModel_1.Equipo();
                 equipo.serial = serial;
                 equipo.marca = marca;
                 equipo.referencia = referencia;
                 equipo.fechaCompra = fechaCompra;
                 equipo.placaSena = placaSena;
-                equipo.cuentaDante = cuentaDante;
+                equipo.cuentaDante = cuentaDanteRegistro;
                 equipo.tipoEquipo = tipoEquipo;
                 equipo.estado = estado;
                 equipo.chequeos = chequeos;
@@ -79,17 +80,21 @@ class EquiposController {
                 equipo.dependencia = dependencia;
                 equipo.ambiente = ambiente;
                 equipo.mantenimientos = mantenimientos;
+                //Verificación si hay una imagen en el archivo subido
+                if (req.file) {
+                    equipo.imagenUrl = req.file.path;
+                }
                 const errors = yield (0, class_validator_1.validate)(equipo);
                 if (errors.length > 0) {
                     return res.status(400).json({ errors });
                 }
-                //Guardamos el equipo
                 const registro = yield equipoModel_1.Equipo.save(equipo);
                 res.status(201).json(registro);
             }
             catch (err) {
-                if (err instanceof Error)
+                if (err instanceof Error) {
                     res.status(500).send(err.message);
+                }
             }
         });
     }
@@ -232,7 +237,7 @@ class EquiposController {
                 const equipo = yield equipoModel_1.Equipo.findOne({
                     where: { serial: serial },
                     //select: ['serial', 'marca', 'referencia', 'placaSena', 'fechaCompra'],
-                    relations: ['cuentaDante', 'mantenimientos', 'mantenimientos.usuario', 'subsede', 'dependencia', 'ambiente', 'tipoEquipo']
+                    relations: ['cuentaDante', 'mantenimientos', 'mantenimientos.usuario', 'mantenimientos.chequeos', 'subsede', 'dependencia', 'ambiente', 'tipoEquipo']
                 });
                 if (!equipo) {
                     return res.status(404).json({ message: "Equipo no encontrado" });

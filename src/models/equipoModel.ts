@@ -30,6 +30,9 @@ export class Equipo extends BaseEntity{
     @Length(6, 20, { message: "La placa debe tener entre 4 y 20 caracteres" })
     placaSena: string;
 
+    @Column("varchar", { name: 'imagen_url' })
+    imagenUrl: string;
+
     @CreateDateColumn()
     createdAt: Date;
 

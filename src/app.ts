@@ -32,6 +32,9 @@ app.get('/', (req: Request, res: Response) => {
     res.send('Hola mundo')
 });
 
+//Servimos las imágenes de manera estática desde la carpeta uploads
+app.use('/uploads', express.static('uploads'));
+
 //Rutas de la APP
 app.use("/equipos", equiposRoutes);
 app.use("/tipoEquipos", tipoEquiposRoutes);

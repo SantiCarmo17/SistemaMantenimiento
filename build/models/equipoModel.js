@@ -52,6 +52,10 @@ __decorate([
     __metadata("design:type", String)
 ], Equipo.prototype, "placaSena", void 0);
 __decorate([
+    (0, typeorm_1.Column)("varchar", { name: 'imagen_url' }),
+    __metadata("design:type", String)
+], Equipo.prototype, "imagenUrl", void 0);
+__decorate([
     (0, typeorm_1.CreateDateColumn)(),
     __metadata("design:type", Date)
 ], Equipo.prototype, "createdAt", void 0);

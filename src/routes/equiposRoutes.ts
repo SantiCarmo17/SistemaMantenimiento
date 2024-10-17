@@ -2,13 +2,14 @@ import express from 'express';
 import equiposController from '../controllers/equiposController';
 import verificarToken from '../middlewares/authMiddleware';
 import validarRol from '../middlewares/rolValidatorMiddleware';
+import { uploadImage } from '../middlewares/multerMiddleware';
 import multer from 'multer';
 
 const upload = multer({ storage: multer.memoryStorage() });
 
 const router = express.Router();
 
-router.post('/', verificarToken, validarRol(['ADMINISTRADOR']), equiposController.agregarEquipo);
+router.post('/', verificarToken, validarRol(['ADMINISTRADOR']), uploadImage.single('image'), equiposController.agregarEquipo);
 
 router.post('/importar', verificarToken, validarRol(['ADMINISTRADOR']), upload.single('excelEquipos'),equiposController.importarEquipos);
 

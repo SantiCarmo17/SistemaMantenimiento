@@ -5,36 +5,51 @@ import { DeepPartial } from "typeorm";
 import { validate } from "class-validator";
 import { EquipoRow } from "../interfaces/equipo.interface";
 import * as XLSX from 'xlsx';
-import { AppDataSource } from "../database/conexion";
 
 
 class EquiposController{
     constructor(){
     }
 
-    async agregarEquipo(req: Request, res: Response){
+    async agregarEquipo(req: Request, res: Response) {
         try {
-            const { serial, marca, referencia, fechaCompra, placaSena, cuentaDante, tipoEquipo, estado, chequeos, sede, subsede, dependencia, ambiente, mantenimientos, chequeosMantenimiento } = req.body;
-
-            //Verificamos que no exista un equipo con el mismo serial
-            const equipoExistente = await Equipo.findOneBy({serial: serial});
-            if(equipoExistente){
+            const {
+                serial,
+                marca,
+                referencia,
+                fechaCompra,
+                placaSena,
+                cuentaDante,
+                tipoEquipo,
+                estado,
+                chequeos,
+                sede,
+                subsede,
+                dependencia,
+                ambiente,
+                mantenimientos
+            } = req.body;
+    
+            //Verificación de equipo con el mismo serial
+            const equipoExistente = await Equipo.findOneBy({ serial });
+            if (equipoExistente) {
                 return res.status(400).json({ error: 'Este Equipo ya está registrado' });
             }
-
-            //Verificamos que el propietario si exista en la BD
-            const  cuentaDanteRegistro = await CuentaDante.findOneBy({documento: cuentaDante});
-            if(!cuentaDanteRegistro){
-                throw new Error ('Cuentadante no encontrado')
+    
+            //Verificación de existencia de cuentadante
+            const cuentaDanteRegistro = await CuentaDante.findOneBy({ documento: cuentaDante });
+            if (!cuentaDanteRegistro) {
+                throw new Error('Cuentadante no encontrado');
             }
-
+    
+            //Nueva instancia de equipo
             const equipo = new Equipo();
             equipo.serial = serial;
             equipo.marca = marca;
             equipo.referencia = referencia;
             equipo.fechaCompra = fechaCompra;
             equipo.placaSena = placaSena;
-            equipo.cuentaDante = cuentaDante;
+            equipo.cuentaDante = cuentaDanteRegistro;
             equipo.tipoEquipo = tipoEquipo;
             equipo.estado = estado;
             equipo.chequeos = chequeos;
@@ -43,18 +58,23 @@ class EquiposController{
             equipo.dependencia = dependencia;
             equipo.ambiente = ambiente;
             equipo.mantenimientos = mantenimientos;
-
+    
+            //Verificación si hay una imagen en el archivo subido
+            if (req.file) {
+                equipo.imagenUrl = req.file.path; 
+            }
+    
             const errors = await validate(equipo);
             if (errors.length > 0) {
-              return res.status(400).json({ errors });
+                return res.status(400).json({ errors });
             }
-
-            //Guardamos el equipo
+    
             const registro = await Equipo.save(equipo);
             res.status(201).json(registro);
         } catch (err) {
-            if(err instanceof Error)
-            res.status(500).send(err.message);
+            if (err instanceof Error) {
+                res.status(500).send(err.message);
+            }
         }
     }
 
@@ -205,7 +225,7 @@ class EquiposController{
             const equipo = await Equipo.findOne({
                 where: { serial: serial },
                 //select: ['serial', 'marca', 'referencia', 'placaSena', 'fechaCompra'],
-                relations: ['cuentaDante', 'mantenimientos', 'mantenimientos.usuario', 'subsede', 'dependencia', 'ambiente', 'tipoEquipo']
+                relations: ['cuentaDante', 'mantenimientos', 'mantenimientos.usuario', 'mantenimientos.chequeos', 'subsede', 'dependencia', 'ambiente', 'tipoEquipo']
             });
     
             if (!equipo) {
