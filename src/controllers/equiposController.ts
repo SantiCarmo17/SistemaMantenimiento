@@ -1,3 +1,6 @@
+import fs from 'fs';
+import path from 'path';
+import axios from 'axios';
 import { Request, Response } from "express";
 import { Equipo } from "../models/equipoModel";
 import { CuentaDante } from "../models/cuentaDanteModel";
@@ -148,7 +151,27 @@ class EquiposController{
         }
     }
 
-    async importarEquipos(req: Request, res: Response) {
+    async  downloadImage(url: string, filename: string): Promise<string> {
+        const filePath = path.join(__dirname, '../../uploads', filename);
+    
+        // Descargamos la imagen desde la URL
+        const response = await axios({
+            url,
+            responseType: 'stream',
+        });
+    
+        // Guardamos la imagen en la carpeta /uploads
+        await new Promise((resolve, reject) => {
+            const writeStream = fs.createWriteStream(filePath);
+            response.data.pipe(writeStream);
+            writeStream.on('finish', resolve);
+            writeStream.on('error', reject);
+        });
+    
+        return filePath; // Devolvemos la ruta de la imagen guardada
+    }
+    
+    async  importarEquipos(req: Request, res: Response) {
         try {
             const file = req.file?.buffer;
     
@@ -164,37 +187,48 @@ class EquiposController{
             //Convertimos los datos del worksheet a un array de objetos
             const data: EquipoRow[] = XLSX.utils.sheet_to_json(worksheet);
     
-            const equipos: Equipo[] = data.map(item => {
-                let fechaCompra: Date;
-                
-                //Verificaciones de fecha
-                if (typeof item.fechaCompra === 'number') {
-                    const excelDate = item.fechaCompra; 
-                    const parsedDate = XLSX.SSF.parse_date_code(excelDate);
-                    fechaCompra = new Date(parsedDate.y, parsedDate.m - 1, parsedDate.d); 
-                } else if (typeof item.fechaCompra === 'string') {
-                    fechaCompra = new Date(item.fechaCompra);
-                } else {
-                    fechaCompra = new Date(item.fechaCompra); 
-                }
+            //Iteramos sobre los equipos del archivo Excel
+            const equipos: Equipo[] = await Promise.all(
+                data.map(async (item) => {
+                    let fechaCompra: Date;
     
-                //Nueva instancia
-                return new Equipo({
-                    serial: item.serial,
-                    marca: item.marca,
-                    referencia: item.referencia,
-                    fechaCompra: fechaCompra,
-                    placaSena: item.placaSena,
-                    tipoEquipo: item.tipoEquipo,
-                    cuentaDante: item.cuentaDante,
-                    sede: item.sede,
-                    subsede: item.subsede,
-                    dependencia: item.dependencia,
-                    ambiente: item.ambiente
-                });
-            });
+                    //Verificaciones de fecha
+                    if (typeof item.fechaCompra === 'number') {
+                        const excelDate = item.fechaCompra;
+                        const parsedDate = XLSX.SSF.parse_date_code(excelDate);
+                        fechaCompra = new Date(parsedDate.y, parsedDate.m - 1, parsedDate.d);
+                    } else if (typeof item.fechaCompra === 'string') {
+                        fechaCompra = new Date(item.fechaCompra);
+                    } else {
+                        fechaCompra = new Date(item.fechaCompra);
+                    }
     
-            //Guardamos los datos en la base de datos
+                    //Si existe una URL de imagen, descargamos la imagen
+                    let imagenUrl = '';
+                    if (item.imagenUrl && typeof item.imagenUrl === 'string') {
+                        const filename = `${item.serial}-${Date.now()}.jpg`; //Creamos un nombre único para la imagen
+                        imagenUrl = await this.downloadImage(item.imagenUrl, filename);
+                    }
+    
+                    //Nueva instancia de equipo
+                    return new Equipo({
+                        serial: item.serial,
+                        marca: item.marca,
+                        referencia: item.referencia,
+                        fechaCompra: fechaCompra,
+                        placaSena: item.placaSena,
+                        tipoEquipo: item.tipoEquipo,
+                        cuentaDante: item.cuentaDante,
+                        sede: item.sede,
+                        subsede: item.subsede,
+                        dependencia: item.dependencia,
+                        ambiente: item.ambiente,
+                        imagenUrl, // Guardamos la URL de la imagen
+                    });
+                })
+            );
+    
+            // Guardamos los equipos en la base de datos
             await Equipo.save(equipos);
     
             res.json({ message: 'Datos importados correctamente' });
@@ -225,7 +259,7 @@ class EquiposController{
             const equipo = await Equipo.findOne({
                 where: { serial: serial },
                 //select: ['serial', 'marca', 'referencia', 'placaSena', 'fechaCompra'],
-                relations: ['cuentaDante', 'mantenimientos', 'mantenimientos.usuario', 'chequeos', 'subsede', 'dependencia', 'ambiente', 'tipoEquipo']
+                relations: ['cuentaDante', 'mantenimientos', 'mantenimientos.usuario', 'mantenimientos.chequeos.serial', 'subsede', 'dependencia', 'ambiente', 'tipoEquipo']
             });
     
             if (!equipo) {

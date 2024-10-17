@@ -18,4 +18,5 @@ export interface EquipoRow {
     subsede?: Subsede;            
     dependencia?: Dependencia;       
     ambiente?: Ambiente;       
+    imagenUrl?: string;
 }
