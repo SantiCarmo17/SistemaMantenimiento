@@ -42,16 +42,11 @@ var __rest = (this && this.__rest) || function (s, e) {
         }
     return t;
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-const fs_1 = __importDefault(require("fs"));
-const path_1 = __importDefault(require("path"));
-const axios_1 = __importDefault(require("axios"));
 const equipoModel_1 = require("../models/equipoModel");
 const cuentaDanteModel_1 = require("../models/cuentaDanteModel");
 const class_validator_1 = require("class-validator");
+const dateConverterHelper_1 = require("../helpers/dateConverterHelper");
 const XLSX = __importStar(require("xlsx"));
 class EquiposController {
     constructor() {
@@ -168,24 +163,6 @@ class EquiposController {
             }
         });
     }
-    downloadImage(url, filename) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const filePath = path_1.default.join(__dirname, '../../uploads', filename);
-            // Descargamos la imagen desde la URL
-            const response = yield (0, axios_1.default)({
-                url,
-                responseType: 'stream',
-            });
-            // Guardamos la imagen en la carpeta /uploads
-            yield new Promise((resolve, reject) => {
-                const writeStream = fs_1.default.createWriteStream(filePath);
-                response.data.pipe(writeStream);
-                writeStream.on('finish', resolve);
-                writeStream.on('error', reject);
-            });
-            return filePath; // Devolvemos la ruta de la imagen guardada
-        });
-    }
     importarEquipos(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             var _a;
@@ -203,25 +180,12 @@ class EquiposController {
                 //Iteramos sobre los equipos del archivo Excel
                 const equipos = yield Promise.all(data.map((item) => __awaiter(this, void 0, void 0, function* () {
                     let fechaCompra;
-                    //Verificaciones de fecha
                     if (typeof item.fechaCompra === 'number') {
-                        const excelDate = item.fechaCompra;
-                        const parsedDate = XLSX.SSF.parse_date_code(excelDate);
-                        fechaCompra = new Date(parsedDate.y, parsedDate.m - 1, parsedDate.d);
-                    }
-                    else if (typeof item.fechaCompra === 'string') {
-                        fechaCompra = new Date(item.fechaCompra);
+                        fechaCompra = (0, dateConverterHelper_1.excelDateToDate)(item.fechaCompra);
                     }
                     else {
                         fechaCompra = new Date(item.fechaCompra);
                     }
-                    //Si existe una URL de imagen, descargamos la imagen
-                    let imagenUrl = '';
-                    if (item.imagenUrl && typeof item.imagenUrl === 'string') {
-                        const filename = `${item.serial}-${Date.now()}.jpg`; //Creamos un nombre único para la imagen
-                        imagenUrl = yield this.downloadImage(item.imagenUrl, filename);
-                    }
-                    //Nueva instancia de equipo
                     return new equipoModel_1.Equipo({
                         serial: item.serial,
                         marca: item.marca,
@@ -234,7 +198,7 @@ class EquiposController {
                         subsede: item.subsede,
                         dependencia: item.dependencia,
                         ambiente: item.ambiente,
-                        imagenUrl, // Guardamos la URL de la imagen
+                        imagenUrl: item.imagenUrl,
                     });
                 })));
                 // Guardamos los equipos en la base de datos
@@ -247,34 +211,34 @@ class EquiposController {
             }
         });
     }
-    generarDatosCv(req, res) {
-        return __awaiter(this, void 0, void 0, function* () {
-            try {
-                const equipos = yield equipoModel_1.Equipo.find({
-                    select: ['serial', 'marca', 'referencia', 'placaSena']
-                });
-                res.status(200).json(equipos);
-            }
-            catch (err) {
-                if (err instanceof Error) {
-                    res.status(500).send(err.message);
-                }
-            }
-        });
-    }
     generarDatosCvEspecifico(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             const { serial } = req.params;
             try {
+                // Obtener el equipo y todas las relaciones necesarias
                 const equipo = yield equipoModel_1.Equipo.findOne({
                     where: { serial: serial },
-                    //select: ['serial', 'marca', 'referencia', 'placaSena', 'fechaCompra'],
-                    relations: ['cuentaDante', 'mantenimientos', 'mantenimientos.usuario', 'mantenimientos.chequeos.equipo.serial', 'subsede', 'dependencia', 'ambiente', 'tipoEquipo']
+                    relations: ['cuentaDante', 'mantenimientos', 'mantenimientos.usuario', 'mantenimientos.chequeos', 'subsede', 'dependencia', 'ambiente', 'tipoEquipo']
                 });
                 if (!equipo) {
                     return res.status(404).json({ message: "Equipo no encontrado" });
                 }
-                res.status(200).json(equipo);
+                //Filtro de datos específicos
+                const mantenimientos = equipo.mantenimientos.map(mantenimiento => ({
+                    idMantenimiento: mantenimiento.idMantenimiento,
+                    fechaProximoMantenimiento: mantenimiento.fechaProxMantenimiento,
+                    fechaUltimoMantenimiento: mantenimiento.fechaUltimoMantenimiento,
+                    usuario: mantenimiento.usuario,
+                    chequeos: mantenimiento.chequeos.map(chequeo => ({
+                        idChequeo: chequeo.idChequeo,
+                        descripcion: chequeo.descripcion,
+                        equipoSerialChequeo: chequeo.equipo.serial //Obtenemos el serial del equipo relacionado con el chequeo
+                    }))
+                }));
+                res.status(200).json({
+                    equipo,
+                    mantenimientos: mantenimientos,
+                });
             }
             catch (err) {
                 if (err instanceof Error) {

@@ -15,8 +15,6 @@ router.post('/importar', verificarToken, validarRol(['ADMINISTRADOR']), upload.s
 
 router.get('/', verificarToken, validarRol(['ADMINISTRADOR', 'TÉCNICO EN CAMPO', 'USUARIO DE CONSULTA']), equiposController.listarEquipos);
 
-router.get('/equiposCV', verificarToken, validarRol(['ADMINISTRADOR', 'TÉCNICO EN CAMPO', 'USUARIO DE CONSULTA']), equiposController.generarDatosCv);
-
 router.get('/equiposCV/:serial', verificarToken, validarRol(['ADMINISTRADOR', 'TÉCNICO EN CAMPO', 'USUARIO DE CONSULTA']), equiposController.generarDatosCvEspecifico);
 
 router.route("/:serial")

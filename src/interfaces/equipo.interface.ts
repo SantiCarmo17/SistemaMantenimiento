@@ -4,7 +4,6 @@ import { Dependencia } from "../models/dependenciaModel";
 import { Sede } from "../models/sedeModel";
 import { Subsede } from "../models/subsedeModel";
 import { TipoEquipo } from "../models/tipoEquipoModel";
-import multer from "multer";
 
 export interface EquipoRow {
     serial: string;
