@@ -168,6 +168,7 @@ class EquiposController{
             //Iteramos sobre los equipos del archivo Excel
             const equipos: Equipo[] = await Promise.all(
                 data.map(async (item) => {
+                    //Validaciones de fecha
                     let fechaCompra: Date;
                     if (typeof item.fechaCompra === 'number') {
                         fechaCompra = excelDateToDate(item.fechaCompra);
@@ -210,30 +211,14 @@ class EquiposController{
             // Obtener el equipo y todas las relaciones necesarias
             const equipo = await Equipo.findOne({
                 where: { serial: serial },
-                relations: ['cuentaDante', 'mantenimientos', 'mantenimientos.usuario', 'mantenimientos.chequeos', 'subsede', 'dependencia', 'ambiente', 'tipoEquipo']
+                relations: ['cuentaDante', 'mantenimientos', 'mantenimientos.usuario', 'subsede', 'dependencia', 'ambiente', 'tipoEquipo']
             });
     
             if (!equipo) {
                 return res.status(404).json({ message: "Equipo no encontrado" });
             }
     
-            //Filtro de datos específicos
-            const mantenimientos = equipo.mantenimientos.map(mantenimiento => ({
-                idMantenimiento: mantenimiento.idMantenimiento,
-                fechaProximoMantenimiento: mantenimiento.fechaProxMantenimiento,
-                fechaUltimoMantenimiento: mantenimiento.fechaUltimoMantenimiento,
-                usuario: mantenimiento.usuario, 
-                chequeos: mantenimiento.chequeos.map(chequeo => ({
-                    idChequeo: chequeo.idChequeo,
-                    descripcion: chequeo.descripcion,
-                    equipoSerialChequeo: chequeo.equipo.serial //Obtenemos el serial del equipo relacionado con el chequeo
-                }))
-            }));
-    
-            res.status(200).json({
-                equipo,
-                mantenimientos: mantenimientos,
-            });
+            res.status(200).json({equipo});
         } catch (err) {
             if (err instanceof Error) {
                 res.status(500).send(err.message);

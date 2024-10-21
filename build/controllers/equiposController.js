@@ -179,6 +179,7 @@ class EquiposController {
                 const data = XLSX.utils.sheet_to_json(worksheet);
                 //Iteramos sobre los equipos del archivo Excel
                 const equipos = yield Promise.all(data.map((item) => __awaiter(this, void 0, void 0, function* () {
+                    //Validaciones de fecha
                     let fechaCompra;
                     if (typeof item.fechaCompra === 'number') {
                         fechaCompra = (0, dateConverterHelper_1.excelDateToDate)(item.fechaCompra);
@@ -218,27 +219,12 @@ class EquiposController {
                 // Obtener el equipo y todas las relaciones necesarias
                 const equipo = yield equipoModel_1.Equipo.findOne({
                     where: { serial: serial },
-                    relations: ['cuentaDante', 'mantenimientos', 'mantenimientos.usuario', 'mantenimientos.chequeos', 'subsede', 'dependencia', 'ambiente', 'tipoEquipo']
+                    relations: ['cuentaDante', 'mantenimientos', 'mantenimientos.usuario', 'subsede', 'dependencia', 'ambiente', 'tipoEquipo']
                 });
                 if (!equipo) {
                     return res.status(404).json({ message: "Equipo no encontrado" });
                 }
-                //Filtro de datos específicos
-                const mantenimientos = equipo.mantenimientos.map(mantenimiento => ({
-                    idMantenimiento: mantenimiento.idMantenimiento,
-                    fechaProximoMantenimiento: mantenimiento.fechaProxMantenimiento,
-                    fechaUltimoMantenimiento: mantenimiento.fechaUltimoMantenimiento,
-                    usuario: mantenimiento.usuario,
-                    chequeos: mantenimiento.chequeos.map(chequeo => ({
-                        idChequeo: chequeo.idChequeo,
-                        descripcion: chequeo.descripcion,
-                        equipoSerialChequeo: chequeo.equipo.serial //Obtenemos el serial del equipo relacionado con el chequeo
-                    }))
-                }));
-                res.status(200).json({
-                    equipo,
-                    mantenimientos: mantenimientos,
-                });
+                res.status(200).json({ equipo });
             }
             catch (err) {
                 if (err instanceof Error) {
