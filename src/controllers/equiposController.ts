@@ -208,14 +208,14 @@ class EquiposController{
         const { serial } = req.params;
     
         try {
-            // Obtener el equipo y todas las relaciones necesarias, incluyendo chequeos dentro de mantenimientos
+
             const equipo = await Equipo.findOne({
                 where: { serial: serial },
                 relations: [
                     'cuentaDante',
                     'mantenimientos',
                     'mantenimientos.usuario', 
-                    'mantenimientos.chequeos', // Relación de chequeos dentro de mantenimientos
+                    'mantenimientos.chequeos', 
                     'subsede',
                     'dependencia',
                     'ambiente',
@@ -227,21 +227,27 @@ class EquiposController{
                 return res.status(404).json({ message: "Equipo no encontrado" });
             }
     
-            // Devolver la información completa del equipo y sus mantenimientos con chequeos
+            //Filtramos los chequeos de los mantenimientos solo para el equipo específico
+            const mantenimientosConChequeos = equipo.mantenimientos.map(mantenimiento => ({
+                mantenimientoId: mantenimiento.idMantenimiento,
+                fechaUltimoMantenimiento: mantenimiento.fechaUltimoMantenimiento, 
+                tipoMantenimiento: mantenimiento.tipoMantenimiento,
+                usuario: mantenimiento.usuario, 
+                chequeos: mantenimiento.chequeos.filter(chequeo => chequeo.equipo.serial === equipo.serial) 
+            }));
+    
+            //Devolvemos la información completa del equipo y sus mantenimientos con chequeos
             res.status(200).json({
                 equipo,
-                mantenimientos: equipo.mantenimientos.map(mantenimiento => ({
-                    mantenimientoId: mantenimiento.idMantenimiento,
-                    usuario: mantenimiento.usuario, 
-                    chequeos: mantenimiento.chequeos,
-                }))
+                mantenimientos: mantenimientosConChequeos
             });
         } catch (err) {
             if (err instanceof Error) {
                 res.status(500).send(err.message);
             }
         }
-    }    
+    }
+    
 }
 
 export default new EquiposController();
