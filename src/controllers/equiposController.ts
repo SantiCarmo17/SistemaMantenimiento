@@ -204,21 +204,38 @@ class EquiposController{
         }
     }
 
-    async generarDatosCvEspecifico(req: Request, res: Response) {
+    async generarDatosCvEspecifico(req: Request, res: Response) { 
         const { serial } = req.params;
     
         try {
-            // Obtener el equipo y todas las relaciones necesarias
+            // Obtener el equipo y todas las relaciones necesarias, incluyendo chequeos dentro de mantenimientos
             const equipo = await Equipo.findOne({
                 where: { serial: serial },
-                relations: ['cuentaDante', 'mantenimientos', 'mantenimientos.usuario', 'subsede', 'dependencia', 'ambiente', 'tipoEquipo']
+                relations: [
+                    'cuentaDante',
+                    'mantenimientos',
+                    'mantenimientos.usuario', 
+                    'mantenimientos.chequeos', // Relación de chequeos dentro de mantenimientos
+                    'subsede',
+                    'dependencia',
+                    'ambiente',
+                    'tipoEquipo'
+                ]
             });
     
             if (!equipo) {
                 return res.status(404).json({ message: "Equipo no encontrado" });
             }
     
-            res.status(200).json(equipo);
+            // Devolver la información completa del equipo y sus mantenimientos con chequeos
+            res.status(200).json({
+                equipo,
+                mantenimientos: equipo.mantenimientos.map(mantenimiento => ({
+                    mantenimientoId: mantenimiento.idMantenimiento,
+                    usuario: mantenimiento.usuario, 
+                    chequeos: mantenimiento.chequeos,
+                }))
+            });
         } catch (err) {
             if (err instanceof Error) {
                 res.status(500).send(err.message);
