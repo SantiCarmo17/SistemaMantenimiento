@@ -224,7 +224,7 @@ class EquiposController {
                 if (!equipo) {
                     return res.status(404).json({ message: "Equipo no encontrado" });
                 }
-                res.status(200).json({ equipo });
+                res.status(200).json(equipo);
             }
             catch (err) {
                 if (err instanceof Error) {
