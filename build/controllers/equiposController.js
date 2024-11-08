@@ -224,6 +224,7 @@ class EquiposController {
                         'mantenimientos.usuario',
                         'mantenimientos.chequeos',
                         'chequeos',
+                        'chequeos.mantenimiento',
                         'subsede',
                         'dependencia',
                         'ambiente',
