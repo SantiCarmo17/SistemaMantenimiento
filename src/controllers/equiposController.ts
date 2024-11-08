@@ -23,6 +23,7 @@ class EquiposController{
                 cuentaDante,
                 tipoEquipo,
                 estado,
+                imagenUrl,
                 chequeos,
                 sede,
                 subsede,
@@ -53,17 +54,13 @@ class EquiposController{
             equipo.cuentaDante = cuentaDanteRegistro;
             equipo.tipoEquipo = tipoEquipo;
             equipo.estado = estado;
+            equipo.imagenUrl = imagenUrl;
             equipo.chequeos = chequeos;
             equipo.sede = sede;
             equipo.subsede = subsede;
             equipo.dependencia = dependencia;
             equipo.ambiente = ambiente;
             equipo.mantenimientos = mantenimientos;
-    
-            //Verificación si hay una imagen en el archivo subido
-            if (req.file) {
-                equipo.imagenUrl = req.file.path; 
-            }
     
             const errors = await validate(equipo);
             if (errors.length > 0) {

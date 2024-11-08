@@ -54,7 +54,7 @@ class EquiposController {
     agregarEquipo(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const { serial, marca, referencia, fechaCompra, placaSena, cuentaDante, tipoEquipo, estado, chequeos, sede, subsede, dependencia, ambiente, mantenimientos } = req.body;
+                const { serial, marca, referencia, fechaCompra, placaSena, cuentaDante, tipoEquipo, estado, imagenUrl, chequeos, sede, subsede, dependencia, ambiente, mantenimientos } = req.body;
                 //Verificación de equipo con el mismo serial
                 const equipoExistente = yield equipoModel_1.Equipo.findOneBy({ serial });
                 if (equipoExistente) {
@@ -75,16 +75,13 @@ class EquiposController {
                 equipo.cuentaDante = cuentaDanteRegistro;
                 equipo.tipoEquipo = tipoEquipo;
                 equipo.estado = estado;
+                equipo.imagenUrl = imagenUrl;
                 equipo.chequeos = chequeos;
                 equipo.sede = sede;
                 equipo.subsede = subsede;
                 equipo.dependencia = dependencia;
                 equipo.ambiente = ambiente;
                 equipo.mantenimientos = mantenimientos;
-                //Verificación si hay una imagen en el archivo subido
-                if (req.file) {
-                    equipo.imagenUrl = req.file.path;
-                }
                 const errors = yield (0, class_validator_1.validate)(equipo);
                 if (errors.length > 0) {
                     return res.status(400).json({ errors });
