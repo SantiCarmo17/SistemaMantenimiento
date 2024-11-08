@@ -7,6 +7,7 @@ class PropietariosController{
     constructor(){
     }
 
+    //Método para agregar Cuentadante
     async agregarCuentaDante(req: Request, res: Response){
         try {
             const { documento, nombre, dependencia, departamento, tipoContrato, equipos, estado } = req.body;

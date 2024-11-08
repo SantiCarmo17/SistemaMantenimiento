@@ -13,7 +13,7 @@ export class ChequeosController{
         const { equipoSerial, mantenimientoId, descripcion, observaciones, linkEvidencia } = req.body;
     
         try {
-            // Buscar si ya existe un chequeo para el equipo y mantenimiento dado
+            //Buscamos si ya existe un chequeo para el equipo y mantenimiento dado
             let chequeo = await Chequeo.findOne({
                 where: { equipo: { serial: equipoSerial }, mantenimiento: { idMantenimiento: mantenimientoId } },
                 relations: ['equipo', 'mantenimiento']
@@ -33,6 +33,7 @@ export class ChequeosController{
                     return res.status(404).json({ message: 'Equipo o Mantenimiento no encontrado' });
                 }
     
+                //Creamos nueva instancia de chequeo
                 chequeo = new Chequeo();
                 chequeo.descripcion = descripcion;
                 chequeo.observaciones = observaciones;
@@ -51,6 +52,7 @@ export class ChequeosController{
         }
     };
 
+    //Método para obtener chequeos de un mantenimiento específico
     async getChequeosByMantenimiento(req: Request, res: Response) {
         const { mantenimientoId } = req.params;
     

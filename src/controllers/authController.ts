@@ -7,9 +7,9 @@ import { validate } from "class-validator";
 class AuthController{
     constructor(){
 
-    }
+  }
 
-
+  //Registro de Usuarios
   async registrarUsuario(req: Request, res: Response) {
     try {
       const { documento, nombre, fechaInicio, fechaFin, observaciones, correo, contrasenia, roles, estado } = req.body;
@@ -58,33 +58,32 @@ class AuthController{
       const { correo, contrasenia } = req.body;
 
       try {
-            const usuario = await Usuario.findOne({where: { correo }, relations: {roles: true}});
+        const usuario = await Usuario.findOne({where: { correo }, relations: {roles: true}});
 
-            if(!usuario){
-                return res.status(401).json({ error:'Usuario o Contraseña incorrectos' });
-            }
-            const contraseniaCorrecta = await bcrypt.compare(contrasenia, usuario.contrasenia);
-
-            if(!contraseniaCorrecta){
-                return res.status(401).json({ error: 'Usuario o Contraseña incorrectos' });
-            }
-
-            //Llamado al Helper
-            const token = generarToken(usuario);
-
-            res.send({
-                correo: usuario.correo,
-                rol: usuario.roles[0].nombre,
-                token
-            });
-
-        }catch(err){
-            res.status(500).json({ error: 'Ha ocurrido un error en la Autenticación.' })
+        if(!usuario){
+          return res.status(401).json({ error:'Usuario o Contraseña incorrectos' });
         }
+        const contraseniaCorrecta = await bcrypt.compare(contrasenia, usuario.contrasenia);
+
+        if(!contraseniaCorrecta){
+          return res.status(401).json({ error: 'Usuario o Contraseña incorrectos' });
+        }
+
+        //Llamado al Helper
+        const token = generarToken(usuario);
+
+        res.send({
+          correo: usuario.correo,
+          rol: usuario.roles[0].nombre,
+          token
+        });
+      }catch(err){
+        res.status(500).json({ error: 'Ha ocurrido un error en la Autenticación.' })
+      }
     }
 
     async saludar(req: Request, res: Response){
-        res.send("Saluditos desde  'ruta-protegida' ");
+      res.send("Saluditos desde  'ruta-protegida' ");
     }
 }
 

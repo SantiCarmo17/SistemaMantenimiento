@@ -80,16 +80,16 @@ class EquiposController{
     }
 
     //Listado de equipos
-    async listarEquipos(req: Request, res: Response){
-        try {
-            const data = await Equipo.find({relations: ['cuentaDante', 'tipoEquipo', 'estado', 'subsede', 'mantenimientos', 'dependencia', 'ambiente', 'chequeos']});
+        async listarEquipos(req: Request, res: Response){
+            try {
+                const data = await Equipo.find({relations: ['cuentaDante', 'tipoEquipo', 'estado', 'subsede', 'mantenimientos', 'dependencia', 'ambiente', 'chequeos']});
 
-            res.status(200).json(data)
-        } catch (err) {
-            if(err instanceof Error)
-            res.status(500).send(err.message);
+                res.status(200).json(data)
+            } catch (err) {
+                if(err instanceof Error)
+                res.status(500).send(err.message);
+            }
         }
-    }
 
     //Obtener equipo específcio
     async obtenerEquipoPorSerial(req: Request, res: Response){
@@ -208,14 +208,14 @@ class EquiposController{
         const { serial } = req.params;
     
         try {
-
             const equipo = await Equipo.findOne({
                 where: { serial: serial },
                 relations: [
                     'cuentaDante',
                     'mantenimientos',
-                    'mantenimientos.usuario', 
-                    'mantenimientos.chequeos', 
+                    'mantenimientos.usuario',
+                    'mantenimientos.chequeos',
+                    'chequeos', 
                     'subsede',
                     'dependencia',
                     'ambiente',
@@ -227,22 +227,25 @@ class EquiposController{
                 return res.status(404).json({ message: "Equipo no encontrado" });
             }
     
-            //Filtramos los chequeos de los mantenimientos solo para el equipo específico
+            // Filtramos los chequeos de los mantenimientos solo para el equipo específico
             const mantenimientosConChequeos = equipo.mantenimientos.map(mantenimiento => ({
                 mantenimientoId: mantenimiento.idMantenimiento,
                 fechaUltimoMantenimiento: mantenimiento.fechaUltimoMantenimiento, 
                 tipoMantenimiento: mantenimiento.tipoMantenimiento,
-                usuario: mantenimiento.usuario, 
-                chequeos: mantenimiento.chequeos.filter(chequeo => chequeo.equipo.serial === equipo.serial) 
+                usuario: mantenimiento.usuario,
+                chequeos: mantenimiento.chequeos.filter(chequeo => 
+                    equipo.chequeos.some(eqChequeo => eqChequeo.idChequeo === chequeo.idChequeo)
+                )
             }));
     
-            //Devolvemos la información completa del equipo y sus mantenimientos con chequeos
+            // Devolvemos la información completa del equipo y sus mantenimientos con chequeos
             res.status(200).json({
                 equipo,
                 mantenimientos: mantenimientosConChequeos
             });
         } catch (err) {
             if (err instanceof Error) {
+                console.error("Error al generar datos específicos:", err);
                 res.status(500).send(err.message);
             }
         }

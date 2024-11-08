@@ -20,7 +20,7 @@ class ChequeosController {
         return __awaiter(this, void 0, void 0, function* () {
             const { equipoSerial, mantenimientoId, descripcion, observaciones, linkEvidencia } = req.body;
             try {
-                // Buscar si ya existe un chequeo para el equipo y mantenimiento dado
+                //Buscamos si ya existe un chequeo para el equipo y mantenimiento dado
                 let chequeo = yield chequeoModel_1.Chequeo.findOne({
                     where: { equipo: { serial: equipoSerial }, mantenimiento: { idMantenimiento: mantenimientoId } },
                     relations: ['equipo', 'mantenimiento']
@@ -38,6 +38,7 @@ class ChequeosController {
                     if (!equipo || !mantenimiento) {
                         return res.status(404).json({ message: 'Equipo o Mantenimiento no encontrado' });
                     }
+                    //Creamos nueva instancia de chequeo
                     chequeo = new chequeoModel_1.Chequeo();
                     chequeo.descripcion = descripcion;
                     chequeo.observaciones = observaciones;
@@ -56,6 +57,7 @@ class ChequeosController {
         });
     }
     ;
+    //Método para obtener chequeos de un mantenimiento específico
     getChequeosByMantenimiento(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             const { mantenimientoId } = req.params;

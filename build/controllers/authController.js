@@ -39,6 +39,7 @@ const class_validator_1 = require("class-validator");
 class AuthController {
     constructor() {
     }
+    //Registro de Usuarios
     registrarUsuario(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {

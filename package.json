@@ -6,7 +6,10 @@
     "dev": "ts-node-dev --respawn src/index.ts",
     "build": "tsc",
     "start": "node build/index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "migration:run": "npx typeorm migration:run",
+    "migration:generate": "npx typeorm migration:generate -d src/database/conexion.ts",
+    "migration:create": "npx typeorm migration:create -d src/database/conexion.ts"
   },
   "pre-commit": [
     "ts.check",

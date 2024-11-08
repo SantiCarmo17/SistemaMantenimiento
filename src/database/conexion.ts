@@ -23,8 +23,9 @@ export const AppDataSource = new DataSource({
     database: process.env.DB_DATABASE,
     logging: true,
     entities: [Equipo, TipoEquipo, CuentaDante, Mantenimiento, Usuario, Rol, Estado, Chequeo, Sede, Subsede, Dependencia, Ambiente],
-    synchronize: false
-})
+    migrations: ["src/migrations/*.ts"],  
+    synchronize: false 
+});
 
 AppDataSource.initialize()
     .then(() => {

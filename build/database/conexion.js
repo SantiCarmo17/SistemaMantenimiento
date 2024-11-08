@@ -25,6 +25,7 @@ exports.AppDataSource = new typeorm_1.DataSource({
     database: process.env.DB_DATABASE,
     logging: true,
     entities: [equipoModel_1.Equipo, tipoEquipoModel_1.TipoEquipo, cuentaDanteModel_1.CuentaDante, mantenimientoModel_1.Mantenimiento, usuarioModel_1.Usuario, rolModel_1.Rol, estadoModel_1.Estado, chequeoModel_1.Chequeo, sedeModel_1.Sede, subsedeModel_1.Subsede, dependenciaModel_1.Dependencia, ambienteModel_1.Ambiente],
+    migrations: ["src/migrations/*.ts"],
     synchronize: false
 });
 exports.AppDataSource.initialize()

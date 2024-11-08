@@ -25,6 +25,7 @@ const class_validator_1 = require("class-validator");
 class PropietariosController {
     constructor() {
     }
+    //Método para agregar Cuentadante
     agregarCuentaDante(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
